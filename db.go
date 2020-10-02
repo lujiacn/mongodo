@@ -14,58 +14,50 @@ import (
 var (
 	DBName string
 	Dial   string
-	Client *qmgo.Client
+	Client *qmgo.Client // the Client for all connections ?
+	DB     *qmgo.Database
 )
+
+func Init() {
+	Connect()
+	objID := primitive.NewObjectID()
+	revel.TypeBinders[reflect.TypeOf(objID)] = ObjectIDBinder
+}
 
 // Connect to database and return client
 func Connect() {
 	var found bool
+	var err error
 
-	Dial = revel.Config.StringDefault("mongodb.dial", "localhost")
-	if DBName, found = revel.Config.String("mongodb.name"); !found {
+	Dial = revel.Config.StringDefault("mongo.dial", "localhost")
+	if DBName, found = revel.Config.String("mongo.name"); !found {
 		urls := strings.Split(Dial, "/")
 		DBName = urls[len(urls)-1]
 	}
-	ctx := context.Background()
-	client, err := qmgo.NewClient(ctx, &qmgo.Config{Uri: Dial})
-	if err != nil {
-		revel.AppLog.Critf("Could not connect to Mongo DB. Error: %s", err)
-	}
-	Client = client
-}
 
-func NewSession() (*qmgo.Session, error) {
-	return Client.Session()
+	ctx := context.Background()
+	//Client, err = qmgo.Open(ctx, &qmgo.Config{Uri: Dial, Database: DBName})
+	//ctx := context.Background()
+	Client, err := qmgo.NewClient(ctx, &qmgo.Config{Uri: Dial})
+	DB = Client.Database(DBName)
+	if err != nil {
+		revel.AppLog.Errorf("Could not connect to Mongo DB. Error: %s", err)
+	}
 }
 
 //MongoController including the mgo session
 type MongoController struct {
-	MongoSession *qmgo.Session
+	MongoCli *qmgo.QmgoClient
 }
 
 func ControllerInit() {
 	revel.InterceptMethod((*MongoController).Begin, revel.BEFORE)
-	revel.InterceptMethod((*MongoController).End, revel.FINALLY)
 }
 
 //Begin do mongo connection
 func (c *MongoController) Begin() revel.Result {
-	var err error
 	if Client == nil {
 		Connect()
-	}
-
-	c.MongoSession, err = Client.Session()
-	if err != nil {
-		return revel.Controller{}.RenderError(err)
-	}
-	return nil
-}
-
-//End close mgo session
-func (c *MongoController) End() revel.Result {
-	if c.MongoSession != nil {
-		c.MongoSession.EndSession(context.Background())
 	}
 	return nil
 }
