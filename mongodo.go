@@ -8,15 +8,25 @@ import (
 	"time"
 
 	"github.com/qiniu/qmgo"
-	//"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-const LogColl string = "ChangeLog"
+// ChangeLog Collaction Name
+const CHANGELOG = "ChangeLog"
+
+const (
+	UPDATE = "UPDATE"
+	DELETE = "DELETE" // soft delete
+	REMOVE = "REMOVE" // hard delete
+	CREATE = "CREATE" // hard delete
+)
 
 type Do struct {
 	model    interface{}
+	Ctx      context.Context
 	Query    bson.M
+	Client   *qmgo.Client
 	Coll     *qmgo.Collection
 	Sort     []string
 	Skip     int64
@@ -24,6 +34,7 @@ type Do struct {
 	Select   []string
 	Operator string
 	Reason   string
+	SaveLog  bool // default is false
 }
 
 //getModelName reflect string name from model
@@ -46,12 +57,24 @@ func getModelName(m interface{}) string {
 func New(model interface{}) *Do {
 	colName := getModelName(model)
 	coll := DB.Collection(colName)
-	return &Do{model: model, Coll: coll}
+	return &Do{model: model, Coll: coll, Ctx: context.Background()}
+}
+
+// NewWithC parse record from different collection
+func NewWithC(model interface{}, cName string) *Do {
+	coll := DB.Collection(cName)
+	return &Do{model: model, Coll: coll, Ctx: context.Background()}
+}
+
+// NewCtx with Ctx input
+func NewCtx(ctx context.Context, model interface{}) *Do {
+	colName := getModelName(model)
+	coll := DB.Collection(colName)
+	return &Do{model: model, Coll: coll, Ctx: ctx}
 }
 
 // Create will generate ID for model
 func (m *Do) Create() error {
-	var err error
 	id := reflect.ValueOf(m.model).Elem().FieldByName("ID")
 	x := reflect.ValueOf(m.model).Elem().FieldByName("CreatedAt")
 	x.Set(reflect.ValueOf(time.Now()))
@@ -61,10 +84,22 @@ func (m *Do) Create() error {
 	isRemoved := reflect.ValueOf(m.model).Elem().FieldByName("IsRemoved")
 	f := false
 	isRemoved.Set(reflect.ValueOf(&f))
+	// Important: make sure the sessCtx used in every operation in the whole transaction
+	// start transaction
+	if result, err := m.Coll.InsertOne(m.Ctx, m.model); err != nil {
+		return err
+	} else {
+		id.Set(reflect.ValueOf(result.InsertedID))
+	}
 
-	result, err := m.Coll.InsertOne(context.Background(), m.model)
-	id.Set(reflect.ValueOf(result.InsertedID))
-	return err
+	if !m.SaveLog {
+		return nil
+	}
+	time.Sleep(1 * time.Second)
+	if err := m.saveLog(m.Ctx, CREATE); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Save update one record according ID
@@ -75,16 +110,38 @@ func (m *Do) Save() error {
 	by := reflect.ValueOf(m.model).Elem().FieldByName("UpdatedBy")
 	by.Set(reflect.ValueOf(m.Operator))
 
-	err := m.Coll.UpdateOne(context.Background(), bson.M{"_id": id.Interface()}, bson.M{"$set": m.model})
+	if err := m.Coll.UpdateOne(m.Ctx,
+		bson.M{"_id": id.Interface()}, bson.M{"$set": m.model}); err != nil {
+		return err
+	}
 
-	return err
+	if !m.SaveLog {
+		return nil
+	}
+
+	if err := m.saveLog(m.Ctx, UPDATE); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Remove is hard delete
 func (m *Do) Remove() error {
 	id := reflect.ValueOf(m.model).Elem().FieldByName("ID")
-	err := m.Coll.Remove(context.Background(), bson.M{"_id": id.Interface()})
-	return err
+	if err := m.Coll.Remove(m.Ctx, bson.M{"_id": id.Interface()}); err != nil {
+		return err
+	}
+
+	if !m.SaveLog {
+		return nil
+	}
+
+	if err := m.saveLog(m.Ctx, REMOVE); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Delete is soft delete
@@ -98,8 +155,19 @@ func (m *Do) Delete() error {
 	f := true
 	removed.Set(reflect.ValueOf(&f))
 
-	err := m.Coll.UpdateOne(context.Background(), bson.M{"_id": id.Interface()}, bson.M{"$set": m.model})
-	return err
+	if err := m.Coll.UpdateOne(m.Ctx, bson.M{"_id": id.Interface()}, bson.M{"$set": m.model}); err != nil {
+		return err
+	}
+
+	if !m.SaveLog {
+		return nil
+	}
+
+	if err := m.saveLog(m.Ctx, DELETE); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // -----  common functions -----
@@ -107,9 +175,9 @@ func (m *Do) Delete() error {
 // findQ is basic Q for all query, added IsRemoved : false
 func (m *Do) findQ() qmgo.QueryI {
 	if m.Query != nil {
-		m.Query["IsRemoved"] = false
+		m.Query["IsRemoved"] = bson.M{"$ne": true}
 	} else {
-		m.Query = bson.M{"IsRemoved": false}
+		m.Query = bson.M{"IsRemoved": bson.M{"$ne": true}}
 	}
 
 	q := m.Coll.Find(context.Background(), m.Query)
@@ -197,10 +265,25 @@ func (m *Do) RemoveAll() (int64, error) {
 		return 0, errors.New("Cannot remove without condition")
 	}
 
-	m.Query = bson.M{"IsRemoved": false}
 	result, err := m.Coll.RemoveAll(context.Background(), m.Query)
 	if err != nil {
 		return 0, err
 	}
 	return result.DeletedCount, nil
+}
+
+//saveLog just copy a record to Changlog
+func (m *Do) saveLog(ctx context.Context, operation string) error {
+	id := reflect.ValueOf(m.model).Elem().FieldByName("ID")
+
+	cl := new(ChangeLog)
+	cl.ChangeReason = m.Reason
+	cl.Operation = operation
+	cl.ModelObjectID = id.Interface().(primitive.ObjectID)
+	cl.ModelName = getModelName(m.model)
+	cl.ModelValue = m.model
+	cl.Operator = m.Operator
+	do := NewCtx(ctx, cl)
+	err := do.Create()
+	return err
 }

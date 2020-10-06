@@ -32,12 +32,14 @@ func TestCreate(t *testing.T) {
 	if err != nil {
 		fmt.Println(err)
 	}
+	fmt.Println("Client is", Client)
 
 	user := new(User)
 	user.Name = "Tom"
 	user.Age = 10
 	do := New(user)
 	do.Operator = "Jia"
+	do.SaveLog = true
 	do.Create()
 	fmt.Println("err", err)
 	// test update
@@ -67,6 +69,6 @@ func TestCreate(t *testing.T) {
 	record := new(User)
 	do = New(record)
 	do.Query = bson.M{"name": "Tom"}
-	err = do.RemoveAll()
-	fmt.Println("removall err", err)
+	count, err := do.RemoveAll()
+	fmt.Println("removall err, count", err, count)
 }

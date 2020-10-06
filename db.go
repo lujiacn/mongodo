@@ -9,13 +9,17 @@ import (
 	"github.com/qiniu/qmgo"
 	"github.com/revel/revel"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var (
-	DBName string
-	Dial   string
-	Client *qmgo.Client // the Client for all connections ?
-	DB     *qmgo.Database
+	DBName   string
+	Dial     string
+	Client   *qmgo.Client // the Client for all connections ?
+	DB       *qmgo.Database
+	MongoCli *mongo.Client
+	MongoDB  *mongo.Database
 )
 
 func Init() {
@@ -29,12 +33,13 @@ func Connect() {
 	var found bool
 	var err error
 
-	Dial = revel.Config.StringDefault("mongo.dial", "localhost")
-	if DBName, found = revel.Config.String("mongo.name"); !found {
+	Dial = revel.Config.StringDefault("mongodb.dial", "mongodb://localhost")
+	if DBName, found = revel.Config.String("mongodb.name"); !found {
 		urls := strings.Split(Dial, "/")
 		DBName = urls[len(urls)-1]
 	}
 
+	// qmgo client
 	ctx := context.Background()
 	//Client, err = qmgo.Open(ctx, &qmgo.Config{Uri: Dial, Database: DBName})
 	//ctx := context.Background()
@@ -43,6 +48,15 @@ func Connect() {
 	if err != nil {
 		revel.AppLog.Errorf("Could not connect to Mongo DB. Error: %s", err)
 	}
+
+	// mongo client
+	MongoClient, err := mongo.Connect(ctx, options.Client().ApplyURI(Dial))
+	if err != nil {
+		revel.AppLog.Errorf("Could not connect to Mongo DB. Error: %s", err)
+	}
+
+	MongoDB = MongoClient.Database(DBName)
+
 }
 
 //MongoController including the mgo session
