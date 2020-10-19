@@ -34,3 +34,26 @@ func CreateIndex(model interface{}, keys []string, unique bool) (string, error) 
 	}
 	return out, nil
 }
+
+func CreateTextIndex(model interface{}, keys []string) (string, error) {
+	colName := getModelName(model)
+	coll := MongoDB.Collection(colName)
+	indexView := coll.Indexes()
+	bKeys := bson.D{}
+	for _, k := range keys {
+		bKeys = append(bKeys, primitive.E{Key: k, Value: "text"})
+	}
+
+	indexModel := mongo.IndexModel{
+		Keys: bKeys,
+		Options: &options.IndexOptions{
+			PartialFilterExpression: bson.M{"IsRemoved": false},
+		},
+	}
+
+	out, err := indexView.CreateOne(context.Background(), indexModel, options.CreateIndexes())
+	if err != nil {
+		return "", err
+	}
+	return out, nil
+}

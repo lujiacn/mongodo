@@ -24,6 +24,29 @@ var (
 	dial   = "mongodb://localhost:27017"
 )
 
+func TestTextIndex(t *testing.T) {
+	Dial = dial
+	DBName = dbName
+	// mongo client
+	MongoClient, err := mongo.Connect(context.Background(), options.Client().ApplyURI(Dial))
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	MongoDB = MongoClient.Database(DBName)
+
+	ctx := context.Background()
+	Client, err := qmgo.NewClient(ctx, &qmgo.Config{Uri: Dial})
+	DB = Client.Database(DBName)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	user := new(User)
+	_, err = CreateTextIndex(user, []string{"Identity", "Name"})
+	fmt.Println("text index", err)
+}
+
 func TestIndex(t *testing.T) {
 	Dial = dial
 	DBName = dbName
