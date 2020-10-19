@@ -1,4 +1,4 @@
-module mongodo
+module github.com/lujiacn/mongodo
 
 go 1.15
 
