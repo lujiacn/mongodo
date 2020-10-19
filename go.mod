@@ -2,6 +2,8 @@ module mongodo
 
 go 1.15
 
+replace gopkg.in/stretchr/testify.v1 => github.com/stretchr/testify v1.6.1
+
 require (
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/inconshreveable/log15 v0.0.0-20200109203555-b30bc20e4fd1 // indirect
@@ -17,4 +19,5 @@ require (
 	go.mongodb.org/mongo-driver v1.4.1
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/stack.v0 v0.0.0-20141108040640-9b43fcefddd0 // indirect
+	gopkg.in/stretchr/testify.v1 v1.0.0-00010101000000-000000000000 // indirect
 )
