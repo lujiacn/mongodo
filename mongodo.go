@@ -264,6 +264,10 @@ func (m *Do) Distinct(key string, i interface{}) error {
 	return err
 }
 
+func (m *Do) EraseAll() (int64, error) {
+	return m.RemoveAll()
+}
+
 // RemoveAll is hardDelete
 func (m *Do) RemoveAll() (int64, error) {
 	if m.Query == nil {
