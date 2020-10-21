@@ -21,11 +21,11 @@ type BaseModel struct {
 
 //ChangeLog
 type ChangeLog struct {
-	BaseModel     `bson:",inline"`
-	ModelObjectID primitive.ObjectID `bson:"ModelObjId,omitempty"`
-	ModelName     string             `bson:"ModelName,omitempty"`
-	ModelValue    interface{}        `bson:"ModelValue,omitempty"`
-	Operation     string             `bson:"Operation,omitempty"`
-	ChangeReason  string             `bson:"ChangeReason,omitempty"`
-	Operator      string             `bson:"Operator,omitempty"`
+	BaseModel    `bson:",inline"`
+	ModelObjID   primitive.ObjectID `bson:"ModelObjId,omitempty"`
+	ModelName    string             `bson:"ModelName,omitempty"`
+	ModelValue   interface{}        `bson:"ModelValue,omitempty"`
+	Operation    string             `bson:"Operation,omitempty"`
+	ChangeReason string             `bson:"ChangeReason,omitempty"`
+	Operator     string             `bson:"Operator,omitempty"`
 }
