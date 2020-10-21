@@ -22,7 +22,7 @@ type BaseModel struct {
 //ChangeLog
 type ChangeLog struct {
 	BaseModel    `bson:",inline"`
-	ModelObjID   primitive.ObjectID `bson:"ModelObjId,omitempty"`
+	ModelObjID   primitive.ObjectID `bson:"ModelObjID,omitempty"`
 	ModelName    string             `bson:"ModelName,omitempty"`
 	ModelValue   interface{}        `bson:"ModelValue,omitempty"`
 	Operation    string             `bson:"Operation,omitempty"`
