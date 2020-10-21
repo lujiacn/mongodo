@@ -126,6 +126,11 @@ func (m *Do) Save() error {
 	return nil
 }
 
+// Erase is alias for Remove
+func (m *Do) Erase() error {
+	return m.Remove()
+}
+
 // Remove is hard delete
 func (m *Do) Remove() error {
 	id := reflect.ValueOf(m.model).Elem().FieldByName("ID")
