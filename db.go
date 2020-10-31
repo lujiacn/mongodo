@@ -48,6 +48,10 @@ func Connect() {
 	//Client, err = qmgo.Open(ctx, &qmgo.Config{Uri: Dial, Database: DBName})
 	//ctx := context.Background()
 	Client, err := qmgo.NewClient(ctx, &qmgo.Config{Uri: Dial})
+	if err != nil {
+		revel.AppLog.Errorf("Could not connect to Mongo DB. Error: %s", err)
+	}
+
 	DB = Client.Database(DBName)
 	if err != nil {
 		revel.AppLog.Errorf("Could not connect to Mongo DB. Error: %s", err)
