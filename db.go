@@ -28,6 +28,10 @@ func Init() {
 	revel.TypeBinders[reflect.TypeOf(objID)] = ObjectIDBinder
 }
 
+func NewClient(ctx context.Context) (*qmgo.Client, error) {
+	return qmgo.NewClient(ctx, &qmgo.Config{Uri: Dial})
+}
+
 // Connect to database and return client
 func Connect() {
 	var found bool
