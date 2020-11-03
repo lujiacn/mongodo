@@ -3,6 +3,7 @@ package mongodo
 import (
 	"context"
 	"errors"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -59,6 +60,7 @@ func CreateTextIndex(model interface{}, keys []string) (string, error) {
 	return out, nil
 }
 
+// IsDup check whether the err is Duplicate error
 func IsDup(err error) bool {
 	var e mongo.WriteException
 	if errors.As(err, &e) {
@@ -69,4 +71,29 @@ func IsDup(err error) bool {
 		}
 	}
 	return false
+}
+
+// CollectionIndexes listout collection indexes
+func CollectionIndexes(model interface{}) ([]string, error) {
+	colName := getModelName(model)
+	coll := MongoDB.Collection(colName)
+	indexView := coll.Indexes()
+	opts := options.ListIndexes().SetMaxTime(2 * time.Second)
+
+	var results []bson.M
+
+	cursor, err := indexView.List(context.TODO(), opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := cursor.All(context.TODO(), &results); err != nil {
+		return nil, err
+	}
+
+	var output []string
+	for _, item := range results {
+		output = append(output, item["name"].(string))
+	}
+	return output, nil
 }

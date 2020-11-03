@@ -111,6 +111,9 @@ func TestIndex(t *testing.T) {
 	do.SaveLog = true
 	err = do.Create()
 	fmt.Println(err)
+
+	result, err := CollectionIndexes(&User{})
+	fmt.Println(result, err)
 }
 
 func TestCreate(t *testing.T) {
