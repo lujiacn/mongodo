@@ -9,6 +9,7 @@ require (
 	github.com/inconshreveable/log15 v0.0.0-20200109203555-b30bc20e4fd1 // indirect
 	github.com/klauspost/compress v1.11.1 // indirect
 	github.com/mattn/go-colorable v0.1.8 // indirect
+	github.com/myesui/uuid v1.0.0 // indirect
 	github.com/qiniu/qmgo v0.7.6
 	github.com/revel/config v1.0.0 // indirect
 	github.com/revel/log15 v2.11.20+incompatible // indirect
