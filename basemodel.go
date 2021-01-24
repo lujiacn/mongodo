@@ -29,3 +29,12 @@ type ChangeLog struct {
 	ChangeReason  string             `bson:"ChangeReason,omitempty"`
 	Operator      string             `bson:"Operator,omitempty"`
 }
+
+// VisitLog
+type VisitLog struct {
+	BaseModel `bson:",inline"`
+	IP        string `bson:"IP,omitempty"`
+	Identity  string `bson:"Identity,omitempty"`
+	Locale    string `bson:"Locale,omitempty"`
+	Url       string `bson:"Url,omitempty"`
+}
