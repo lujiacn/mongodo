@@ -8,15 +8,16 @@ import (
 
 // BaseModel to be emmbered to other struct as audit trail perpurse
 type BaseModel struct {
-	ID        primitive.ObjectID `bson:"_id,omitempty"`
-	CreatedAt time.Time          `bson:"CreatedAt,omitempty"`
-	CreatedBy string             `bson:"CreatedBy,omitempty"`
-	UpdatedAt time.Time          `bson:"UpdatedAt,omitempty"`
-	UpdatedBy string             `bson:"UpdatedBy,omitempty"`
-	IsRemoved *bool              `bson:"IsRemoved,omitempty"`
-	RemovedAt time.Time          `bson:"RemovedAt,omitempty"`
-	RemovedBy string             `bson:"RemovedBy,omitempty"`
-	IsLocked  *bool              `bson:"IsLocked,omitempty"`
+	ID         primitive.ObjectID `bson:"_id,omitempty"`
+	CreatedAt  time.Time          `bson:"CreatedAt,omitempty"`
+	CreatedBy  string             `bson:"CreatedBy,omitempty"`
+	UpdatedAt  time.Time          `bson:"UpdatedAt,omitempty"`
+	UpdatedBy  string             `bson:"UpdatedBy,omitempty"`
+	IsRemoved  *bool              `bson:"IsRemoved,omitempty"`
+	RemovedAt  time.Time          `bson:"RemovedAt,omitempty"`
+	RemovedBy  string             `bson:"RemovedBy,omitempty"`
+	IsLocked   *bool              `bson:"IsLocked,omitempty"`
+	LatestTime time.Time          `bson:"LatestTime,omitempty"`
 }
 
 //ChangeLog

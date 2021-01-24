@@ -75,11 +75,14 @@ func NewCtx(ctx context.Context, model interface{}) *Do {
 
 // Create will generate ID for model
 func (m *Do) Create() error {
+	timeNow := time.Now()
 	id := reflect.ValueOf(m.model).Elem().FieldByName("ID")
 	x := reflect.ValueOf(m.model).Elem().FieldByName("CreatedAt")
-	x.Set(reflect.ValueOf(time.Now()))
+	x.Set(reflect.ValueOf(timeNow))
 	by := reflect.ValueOf(m.model).Elem().FieldByName("CreatedBy")
 	by.Set(reflect.ValueOf(m.Operator))
+	l := reflect.ValueOf(m.model).Elem().FieldByName("LatestTime")
+	l.Set(reflect.ValueOf(timeNow))
 
 	isRemoved := reflect.ValueOf(m.model).Elem().FieldByName("IsRemoved")
 	f := false
@@ -104,11 +107,14 @@ func (m *Do) Create() error {
 
 // Save update one record according ID
 func (m *Do) Save() error {
+	timeNow := time.Now()
 	id := reflect.ValueOf(m.model).Elem().FieldByName("ID")
 	x := reflect.ValueOf(m.model).Elem().FieldByName("UpdatedAt")
-	x.Set(reflect.ValueOf(time.Now()))
+	x.Set(reflect.ValueOf(timeNow))
 	by := reflect.ValueOf(m.model).Elem().FieldByName("UpdatedBy")
 	by.Set(reflect.ValueOf(m.Operator))
+	l := reflect.ValueOf(m.model).Elem().FieldByName("LatestTime")
+	l.Set(reflect.ValueOf(timeNow))
 
 	if err := m.Coll.UpdateOne(m.Ctx,
 		bson.M{"_id": id.Interface()}, bson.M{"$set": m.model}); err != nil {
