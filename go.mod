@@ -2,8 +2,6 @@ module github.com/lujiacn/mongodo
 
 go 1.15
 
-replace github.com/qiniu/qmgo => /Users/i0040679/workspace/go/src/qmgo
-
 require (
 	github.com/aws/aws-sdk-go v1.35.7 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
@@ -12,7 +10,7 @@ require (
 	github.com/klauspost/compress v1.11.1 // indirect
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/myesui/uuid v1.0.0 // indirect
-	github.com/qiniu/qmgo v0.7.6
+	github.com/qiniu/qmgo v0.9.2
 	github.com/revel/config v1.0.0 // indirect
 	github.com/revel/log15 v2.11.20+incompatible // indirect
 	github.com/revel/pathtree v0.0.0-20140121041023-41257a1839e9 // indirect
