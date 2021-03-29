@@ -24,4 +24,5 @@ require (
 	golang.org/x/sys v0.0.0-20201020230747-6e5568b54d1a // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/stack.v0 v0.0.0-20141108040640-9b43fcefddd0 // indirect
+	gopkg.in/stretchr/testify.v1 v1.2.2 // indirect
 )

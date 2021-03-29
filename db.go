@@ -37,7 +37,10 @@ func Connect() {
 	var found bool
 	var err error
 
-	Dial = revel.Config.StringDefault("mongodb.dial", "mongodb://localhost")
+	if Dial, found = revel.Config.String("mongodb.dial"); !found {
+		revel.AppLog.Crit("Mongodb connection not defined")
+	}
+
 	if DBName, found = revel.Config.String("mongodb.name"); !found {
 		urls := strings.Split(Dial, "/")
 		DBName = urls[len(urls)-1]
@@ -47,6 +50,7 @@ func Connect() {
 	ctx := context.Background()
 	//Client, err = qmgo.Open(ctx, &qmgo.Config{Uri: Dial, Database: DBName})
 	//ctx := context.Background()
+	fmt.Println("Debug mongo str", Dial, DBName)
 	Client, err := qmgo.NewClient(ctx, &qmgo.Config{Uri: Dial})
 	if err != nil {
 		revel.AppLog.Errorf("Could not connect to Mongo DB. Error: %s", err)
