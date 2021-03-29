@@ -2,6 +2,8 @@ module github.com/lujiacn/mongodo
 
 go 1.15
 
+replace github.com/qiniu/qmgo => /Users/i0040679/workspace/go/src/qmgo
+
 require (
 	github.com/aws/aws-sdk-go v1.35.7 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
