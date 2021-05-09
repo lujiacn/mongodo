@@ -61,31 +61,31 @@ func Connect() {
 	}
 
 	// mongo client
-	MongoClient, err := mongo.Connect(ctx, options.Client().ApplyURI(Dial))
+	MongoCli, err := mongo.Connect(ctx, options.Client().ApplyURI(Dial))
 	if err != nil {
 		revel.AppLog.Errorf("Could not connect to Mongo DB. Error: %s", err)
 	}
 
-	MongoDB = MongoClient.Database(DBName)
+	MongoDB = MongoCli.Database(DBName)
 
 }
 
 //MongoController including the mgo session
-type MongoController struct {
-	MongoCli *qmgo.QmgoClient
-}
+//type MongoController struct {
+//MongoCli *qmgo.QmgoClient
+//}
 
-func ControllerInit() {
-	revel.InterceptMethod((*MongoController).Begin, revel.BEFORE)
-}
+//func ControllerInit() {
+//revel.InterceptMethod((*MongoController).Begin, revel.BEFORE)
+//}
 
 //Begin do mongo connection
-func (c *MongoController) Begin() revel.Result {
-	if Client == nil {
-		Connect()
-	}
-	return nil
-}
+//func (c *MongoController) Begin() revel.Result {
+//if Client == nil {
+//Connect()
+//}
+//return nil
+//}
 
 // ObjectIDBinder do binding
 var ObjectIDBinder = revel.Binder{

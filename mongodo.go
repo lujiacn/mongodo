@@ -10,6 +10,7 @@ import (
 	"github.com/qiniu/qmgo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // ChangeLog Collaction Name
@@ -244,6 +245,11 @@ func (m *Do) GetByQ() error {
 	return err
 }
 
+//
+//func (m *Do)GetByQAndUpdate() error {
+//err :=
+//}
+
 // Fetch same as Get, but bind to another struct (uses for model name diff)
 func (m *Do) Fetch(record interface{}) error {
 	err := m.findByIdQ().One(record)
@@ -301,4 +307,24 @@ func (m *Do) saveLog(ctx context.Context, operation string) error {
 	do := NewCtx(ctx, cl)
 	err := do.Create()
 	return err
+}
+
+// FetchByQAndDelete find One record according to Query and mark as IsRemoved
+func (m *Do) FetchByQAndDelete() error {
+	colName := getModelName(m.model)
+	coll := MongoDB.Collection(colName)
+	if m.Query == nil {
+		m.Query = bson.M{"IsRemoved": bson.M{"$ne": true}}
+	} else {
+		m.Query["IsRemoved"] = bson.M{"$ne": true}
+	}
+	result := coll.FindOneAndUpdate(context.Background(), m.Query, bson.M{"$set": bson.M{"IsRemoved": true}}, &options.FindOneAndUpdateOptions{})
+	if result.Err() != nil {
+		return result.Err()
+	}
+	decodeErr := result.Decode(m.model)
+	if decodeErr != nil {
+		return decodeErr
+	}
+	return nil
 }
