@@ -187,9 +187,9 @@ func (m *Do) Delete() error {
 // findQ is basic Q for all query, added IsRemoved : false
 func (m *Do) findQ() qmgo.QueryI {
 	if m.Query != nil {
-		m.Query["IsRemoved"] = bson.M{"$ne": true}
+		m.Query["IsRemoved"] = false
 	} else {
-		m.Query = bson.M{"IsRemoved": bson.M{"$ne": true}}
+		m.Query = bson.M{"IsRemoved": false}
 	}
 
 	q := m.Coll.Find(context.Background(), m.Query)
