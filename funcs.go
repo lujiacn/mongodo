@@ -48,9 +48,9 @@ func CreateTextIndex(model interface{}, keys []string) (string, error) {
 
 	indexModel := mongo.IndexModel{
 		Keys: bKeys,
-		Options: &options.IndexOptions{
-			PartialFilterExpression: bson.M{"IsRemoved": false},
-		},
+		//Options: &options.IndexOptions{
+		//PartialFilterExpression: bson.M{"IsRemoved": false},
+		//},
 	}
 
 	out, err := indexView.CreateOne(context.Background(), indexModel, options.CreateIndexes())

@@ -186,11 +186,10 @@ func (m *Do) Delete() error {
 
 // findQ is basic Q for all query, added IsRemoved : false
 func (m *Do) findQ() qmgo.QueryI {
-	if m.Query != nil {
-		m.Query["IsRemoved"] = false
-	} else {
-		m.Query = bson.M{"IsRemoved": false}
+	if m.Query == nil {
+		m.Query = bson.M{}
 	}
+	m.Query["IsRemoved"] = bson.M{"$ne": true}
 
 	q := m.Coll.Find(context.Background(), m.Query)
 	//sort
@@ -314,10 +313,11 @@ func (m *Do) FetchByQAndDelete() error {
 	colName := getModelName(m.model)
 	coll := MongoDB.Collection(colName)
 	if m.Query == nil {
-		m.Query = bson.M{"IsRemoved": bson.M{"$ne": true}}
-	} else {
-		m.Query["IsRemoved"] = bson.M{"$ne": true}
+		m.Query = bson.M{}
 	}
+
+	m.Query["IsRemoved"] = bson.M{"$ne": true}
+
 	result := coll.FindOneAndUpdate(context.Background(), m.Query, bson.M{"$set": bson.M{"IsRemoved": true}}, &options.FindOneAndUpdateOptions{})
 	if result.Err() != nil {
 		return result.Err()
