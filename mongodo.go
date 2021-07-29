@@ -133,6 +133,40 @@ func (m *Do) Save() error {
 	return nil
 }
 
+// SaveIf update record according to ID and Query
+func (m *Do) SaveIf() error {
+	timeNow := time.Now()
+	id := reflect.ValueOf(m.model).Elem().FieldByName("ID")
+	x := reflect.ValueOf(m.model).Elem().FieldByName("UpdatedAt")
+	x.Set(reflect.ValueOf(timeNow))
+	by := reflect.ValueOf(m.model).Elem().FieldByName("UpdatedBy")
+	by.Set(reflect.ValueOf(m.Operator))
+	l := reflect.ValueOf(m.model).Elem().FieldByName("LatestTime")
+	l.Set(reflect.ValueOf(timeNow))
+
+	// check query
+	if m.Query == nil {
+		return errors.New("Query must be defined for SaveIf")
+	}
+	query := m.Query
+	query["_id"] = id.Interface()
+
+	if err := m.Coll.UpdateOne(m.Ctx,
+		query, bson.M{"$set": m.model}); err != nil {
+		return err
+	}
+
+	if !m.SaveLog {
+		return nil
+	}
+
+	if err := m.saveLog(m.Ctx, UPDATE); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Erase is alias for Remove
 func (m *Do) Erase() error {
 	return m.Remove()
