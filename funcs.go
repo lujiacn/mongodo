@@ -37,6 +37,31 @@ func CreateIndex(model interface{}, keys []string, unique bool) (string, error) 
 	return out, nil
 }
 
+// All index without PartialFilterExperession IsRemoved = false
+// CreateIndex with keys and unique (true or false)
+func CreateIndexNoPartial(model interface{}, keys []string, unique bool) (string, error) {
+	colName := getModelName(model)
+	coll := MongoDB.Collection(colName)
+	indexView := coll.Indexes()
+	bKeys := bson.D{}
+	for _, k := range keys {
+		bKeys = append(bKeys, primitive.E{Key: k, Value: 1})
+	}
+
+	indexModel := mongo.IndexModel{
+		Keys: bKeys,
+		Options: &options.IndexOptions{
+			Unique: &unique,
+		},
+	}
+
+	out, err := indexView.CreateOne(context.Background(), indexModel, options.CreateIndexes())
+	if err != nil {
+		return "", err
+	}
+	return out, nil
+}
+
 func CreateTextIndex(model interface{}, keys []string) (string, error) {
 	colName := getModelName(model)
 	coll := MongoDB.Collection(colName)

@@ -133,6 +133,38 @@ func (m *Do) Save() error {
 	return nil
 }
 
+// Save Upsert
+//func (m *Do) Upsert() error {
+//timeNow := time.Now()
+//id := reflect.ValueOf(m.model).Elem().FieldByName("ID")
+//x := reflect.ValueOf(m.model).Elem().FieldByName("UpdatedAt")
+//x.Set(reflect.ValueOf(timeNow))
+//by := reflect.ValueOf(m.model).Elem().FieldByName("UpdatedBy")
+//by.Set(reflect.ValueOf(m.Operator))
+//l := reflect.ValueOf(m.model).Elem().FieldByName("LatestTime")
+//l.Set(reflect.ValueOf(timeNow))
+
+////Check ID exists
+//if id.IsZero() {
+//return m.Create()
+//}
+
+//if err := m.Coll.UpdateOne(m.Ctx,
+//bson.M{"_id": id.Interface()}, bson.M{"$set": m.model}); err != nil {
+//return err
+//}
+
+//if !m.SaveLog {
+//return nil
+//}
+
+//if err := m.saveLog(m.Ctx, UPDATE); err != nil {
+//return err
+//}
+
+//return nil
+//}
+
 // SaveIf update record according to ID and Query
 func (m *Do) SaveIf() error {
 	timeNow := time.Now()
