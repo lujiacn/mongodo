@@ -395,7 +395,28 @@ func (m *Do) FetchByQAndDelete() error {
 	return nil
 }
 
-// FetchByQAndDelete find One record according to Query and mark as IsRemoved
+// FetchByQAndUpsert find One record and update or insert
+func (m *Do) FetchByQAndUpsert(setValue interface{}) error {
+	colName := getModelName(m.model)
+	coll := MongoDB.Collection(colName)
+	if m.Query == nil {
+		m.Query = bson.M{}
+	}
+
+	upsert := true
+
+	result := coll.FindOneAndUpdate(context.Background(), m.Query, bson.M{"$set": setValue}, &options.FindOneAndUpdateOptions{Upsert: &upsert})
+	if result.Err() != nil {
+		return result.Err()
+	}
+	decodeErr := result.Decode(m.model)
+	if decodeErr != nil {
+		return decodeErr
+	}
+	return nil
+}
+
+// FetchByQAndUpdate find One record and update no insert
 func (m *Do) FetchByQAndUpdate(setValue interface{}) error {
 	colName := getModelName(m.model)
 	coll := MongoDB.Collection(colName)
@@ -403,8 +424,7 @@ func (m *Do) FetchByQAndUpdate(setValue interface{}) error {
 		m.Query = bson.M{}
 	}
 
-	//m.Query["IsRemoved"] = bson.M{"$ne": true}
-	upsert := true
+	upsert := false
 
 	result := coll.FindOneAndUpdate(context.Background(), m.Query, bson.M{"$set": setValue}, &options.FindOneAndUpdateOptions{Upsert: &upsert})
 	if result.Err() != nil {
