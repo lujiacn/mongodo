@@ -400,12 +400,13 @@ func (m *Do) FetchByQAndUpsert(setValue interface{}) error {
 	colName := getModelName(m.model)
 	coll := MongoDB.Collection(colName)
 	if m.Query == nil {
-		m.Query = bson.M{}
+		return errors.New("Query cannot be nil must be defined.")
 	}
 
 	upsert := true
+	after := options.After
 
-	result := coll.FindOneAndUpdate(context.Background(), m.Query, bson.M{"$set": setValue}, &options.FindOneAndUpdateOptions{Upsert: &upsert})
+	result := coll.FindOneAndUpdate(context.Background(), m.Query, bson.M{"$set": setValue}, &options.FindOneAndUpdateOptions{Upsert: &upsert, ReturnDocument: &after})
 	if result.Err() != nil {
 		return result.Err()
 	}
@@ -421,12 +422,11 @@ func (m *Do) FetchByQAndUpdate(setValue interface{}) error {
 	colName := getModelName(m.model)
 	coll := MongoDB.Collection(colName)
 	if m.Query == nil {
-		m.Query = bson.M{}
+		return errors.New("Query cannot be nil must be defined.")
 	}
 
-	upsert := false
-
-	result := coll.FindOneAndUpdate(context.Background(), m.Query, bson.M{"$set": setValue}, &options.FindOneAndUpdateOptions{Upsert: &upsert})
+	after := options.After
+	result := coll.FindOneAndUpdate(context.Background(), m.Query, bson.M{"$set": setValue}, &options.FindOneAndUpdateOptions{ReturnDocument: &after})
 	if result.Err() != nil {
 		return result.Err()
 	}
