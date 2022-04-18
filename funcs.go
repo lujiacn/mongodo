@@ -11,7 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// CreateIndexSpecPartial
+// CreateIndexSpecPartial set partiaFilter by user
 func CreateIndexSpecPartial(model interface{}, keys []string, unique bool, partialFilter bson.M) (string, error) {
 	colName := getModelName(model)
 	coll := MongoDB.Collection(colName)
