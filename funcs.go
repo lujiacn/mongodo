@@ -110,6 +110,20 @@ func CreateTextIndex(model interface{}, keys []string) (string, error) {
 	return out, nil
 }
 
+// CreateExpireIndex create expire index for single field
+func CreateExpireIndex(model interface{}, fieldName string, expireAfter int32) (string, error) {
+	colName := getModelName(model)
+	coll := MongoDB.Collection(colName)
+	indexView := coll.Indexes()
+	indexModel := mongo.IndexModel{
+		Keys:    bson.M{fieldName: 1},
+		Options: options.Index().SetExpireAfterSeconds(expireAfter),
+	}
+
+	out, err := indexView.CreateOne(context.Background(), indexModel, options.CreateIndexes())
+	return out, err
+}
+
 // IsDup check whether the err is Duplicate error
 func IsDup(err error) bool {
 	var e mongo.WriteException
