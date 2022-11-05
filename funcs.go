@@ -161,3 +161,12 @@ func CollectionIndexes(model interface{}) ([]string, error) {
 	}
 	return output, nil
 }
+
+// Drop One Index from collection with indexName
+func DropOneIndex(model interface{}, name string) error {
+	colName := getModelName(model)
+	coll := MongoDB.Collection(colName)
+	indexView := coll.Indexes()
+	_, err := indexView.DropOne(context.Background(), name)
+	return err
+}
